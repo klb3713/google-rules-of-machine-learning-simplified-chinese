@@ -1,79 +1,59 @@
-# 你的第一條 Pipeline
+# 你的第一个 Pipeline
 
-對你的第一條 pipeline，專注在你的系統基礎建設 \(infrastructure\)   上。
+对于第一条 pipeline，专注搞定你的系统基础设施。如果你不能完全信任你的 pipeline，那么那些天马行空的机器学习算法，就会如空中楼阁。
 
-雖然去構思那些你將要去做的天馬行空 ML 演算法很有趣，但如果無法在一開始就信任你的 pipeline，你將會很難搞清楚發生什麼事。
+> Eric：意思是说，后续你再尝试、迭代模型的时候，如果基础不打牢靠，你出了问题就会很担心会不会是基础设施出了问题（比如抽样、数据处理等等），这样你没法专心迭代上层了。
 
-> 按：拿料理比喻：你不要會想要在端上料理之後才試圖找出是哪一種原料過期、有毒，或是哪一個產線機器裡面有屍體；所以在做出好吃的創意料理之前，第一件事情得先確保你的資料生產線沒有問題，這是基本卻是最常見也最麻煩的問題。
+## Rule 4 - 确保第一个模型简单，并做好基建
 
-### Rule 4 - 確保第一個模型 \(model\) 簡單，並做好正確的基礎建設
+第一个模型给你的产品提供很大的推力，所以呢，他不需要很花哨。但是你会遇到很多意想不到的基础建设问题。在别人使用你酷炫的机器学习模型之前，你需要决定几个事情：
 
-第一個模型為你的產品提供了最大的推進 \(boost\)，所以它不需要很花俏，但你將會遇到很多預期之外的基礎建設問題。
+1. 如何获取样本.
+2. 初步决定在系统中什么是"好"的，什么是"坏"的.
+    > Eric: 这里应该是指样本的"正", "负".
+3. 如何将你的模型融合到你的程序中。你可以在线 predict，或者离线算好，把结果存到表格里。比如，你可能想离线计算网页结果存到表里，而对于聊天消息则必须在线计算.
 
-在任何人可以使用你那很 cooool 的新 ML 系統之前，你必須決定：
+选择比较简单的特征，这样更容易保证：
 
-1. 如何取得 examples \(i.e. training data\) 給你的學習演算法使用。
+1. 这些特征正确到达你的算法.
+    > 按：無法正確到達的情況，指的就是特徵生錯了，或是特徵更新失敗等情況。至於什麼叫做「簡單」的特徵？則是你不需要將特徵做複雜的轉換，或是經過很多不同的系統、也不需要仰賴額外的系統 input，以致於在中間增加出差錯的可能。
+2. 模型学到合理的权重.
+3. 在服务器上，这些特征也能正确得到.
+    > 按：特別強調這點，表示作者很清楚 production 環境有太多變因：機器資源（CPU、記憶體、硬碟）、網路連線、環境設定不一致、不可抗力等因素，都會是問題，簡單來說上線就是戰場，任何事情都會發生。
 
-2. 初步決定「好」跟「壞」在你的系統中指的是什麼。
+    > Eric: 扎心了老铁，实际情况是离线很好的特征，在线因为经过环节变化，往往质量和分布都变化了...
 
-3. 如何將 model 整合到你的應用？  
-   你可以將 model 應用到線上，或是預先在線下算好並存到一張表。比如你可以預先分類好網頁，將結果存起來給應用查詢；但若是要分類聊天訊息，你可能會需要在線上即時分類。
+ 一旦你有了一个可以可靠做到以上3点的系统，那么工作已经完成了大半了。简单模型可以提供基本的数据和表现，你可以用来测试更复杂的模型。有些团队第一次希望保持"中立"：也就是第一次推出的时候，特别不将机器学习的效果摆在第一位，以免分心。
 
-選擇簡單的特徵 \(features\) 會更容易保證：
+## Rule 5 - 将基础平台和机器学习算法分开测试
 
-1. 這些特徵正確地「到達」\(reach\) 你的演算法
+ 确保基础设施是可以测试的，并且系统的学习部分是被封装好了的，这样你就可以测试周边的所有环境，尤其：
 
-   > 按：無法正確到達的情況，指的就是特徵生錯了，或是特徵更新失敗等情況。至於什麼叫做「簡單」的特徵？則是你不需要將特徵做複雜的轉換，或是經過很多不同的系統、也不需要仰賴額外的系統 input，以致於在中間增加出差錯的可能。
+ 1. 测试将数据喂进算法的部分。检查该被填的特征被填好了。如果隐私政策允许，手动检查模型的输入。如果可能的话，检查 pipeline 中的统计值，并和其他地方做比较，像是 RASTA。
+    > Eric: RASTA 是 google 的 A/B Test 环境，就是线上部分流量用来对比实验的。这里作者的意思应该是查看自己离线 pipeline 的样本、特征分布情况是否和线上一致.
+ 2. 测试模型在训练环境之外的表现。确保模型在训练环境和线上环境能给出同样的 score。
+    > Eric: 这个要求似乎有些理想化，因为有的时候因为系统和环境限制，离线和在线环境的模型效果是没有办法保持一致的。\(见 **\#Rule 37**\)
 
-2. 模型學到合理的權重 \(weights\)。
+机器学习有不可预测性，故确保你有针对训练和测试环境的样本产出测试，确保你能在线上环境加载固定的模型。同时，理解自己的数据也特别和重要：见[Practical Advice for Analysis of Large, Complex Data Sets.](http://www.unofficialgoogledatascience.com/2016/10/practical-advice-for-analysis-of-large.html)
 
-   > 按：承上，壞掉的特徵常會讓你的權重爆掉，如果連權重都不合理，那後面都會是做白工。
+## Rule 6 - 小心复制 pipeline时那些被丢弃的数据
 
-3. 這些特徵正確地在「伺服器上」到達你的演算法
+通常，我们会从别处复制一个 pipeline \(i.e. [cargo cult programming](https://en.wikipedia.org/wiki/Cargo_cult_programming)\), 但是老的 pipeline 丢弃的数据，可许正是我们需要的。比如，Google
+Plus热点资讯的 pipeline 会丢弃老帖子，（因为热点资讯只关注新帖子的 排序）。这个 pipeline被用在Google Plus Stream 上就必须把老帖子留下，因为在这个业务场景下老帖子是有意义的。 另一个比较常见的模式是只把用户可见的信息 log 起来。那如果我们想建模分析为啥某些帖子没有展现，这份数据就会不够用，因为所有负样本都找不到了。在 Google Play 里也发生过同样的悲剧，几个游戏主页的数据混在一起，没法区分来源。
+> Eric: 这里需要一些背景知识，因为天朝访问不了 Google Play，所以这里不太知道咋翻译，就简略写了。
 
-   > 按：特別強調這點，表示作者很清楚 production 環境有太多變因：機器資源（CPU、記憶體、硬碟）、網路連線、環境設定不一致、不可抗力等因素，都會是問題，簡單來說上線就是戰場，任何事情都會發生。
+## Rule 7 - 将先验办法转换为特征，或者外部处理他们
 
-一旦你有一個能可靠地做到這三點的系統，你已經做好大部分的工作了。你的簡單模型提供了最基本的指標跟行為，以讓你可以用來測試更多複雜的模型。
+ 通常，机器学习试图解决的问题都不是全新的。排序、分类等问题，可能都已经有解决方案了。也就是说已经有了一些人工规则或者先验办法存在在那里了。如果你能在机器学习里用到这些已有的东西， 则可祝你一臂之力。
+  你应该尽量挖掘先验办法中的价值，这样做有俩原因。首先，这会使得机器学习的引入过程更加平滑。其次，这些既有规则往往包含了很多对系统的 直觉理解，而这些理解往往是很有价值的。要想用到先验办法，有四种途径：
 
-有些團隊（甚至）會將目標訂在「中性」的第一次推出（系統）-- 也就是第一次推出的時候，特別不將機器學習的成效擺在第一位，以避免分心。
+  1. **用先验规则来做预处理。** 如果老特征（指先验规则）特别的 nb，那么就可以用这招。比如对于一个垃圾过滤器，如果已经有一个发送者黑名单了，那就直接用，别试图再去把这个工作用机器学习方法重新搞一遍。这个办法在二分类问题中尤其好用。
 
-### Rule 5 - 將測試基礎建設 (Infrastructure) 與測試機器學習 (ML) 分開
+  2. **新增特征。** 把先验规则直接当做特征来用也不错。比如做query 的相关性评分，直接把先验规则的打分当做一路特征。以后你可能会用机器学习技术去 massage 这个值（比如把这个值离散化到一个有限集合，或者和其他特征进行组合），但是在开始的时候，就裸用先验特征吧。
 
-確保基礎建設是可以測試的，並且系統的學習部分是被封裝的 \(encapsulated\) 以便你可以測試周邊的所有環境，特別是：
+  3. **挖掘经验法则的输入。** 如果有一个apps经验法则是把安装量、摘要字数、星期几结合在一起作用的，就把这些特征拆开了喂给你的机器学习模型。可以参考组合当中的一些 Rules。（见 Rule 40）
 
-1. 測試將 data 餵進演算法。檢查該被填的 feature columns 有被填好。如果隱私政策允許，手動檢查你的訓練演算法的輸入。
+  4. **修改样本标签。** 当样本原始标签不能完全表达经验法想达到的目的时候，这会是一个选择。比如你的任务是最大化下载量的同时，也想兼顾内容质量，那么也许你可以把下载量和星级相乘，得到最终想要的目标。这里可操作的自由度很高，可以参考"你的第一个目标"。
 
-   如果可能，檢查 pipeline 裡面的統計數據、跟其他地方做比較，像是 RASTA。
-
-   > 按：關於 RASTA，我找到的解釋是 Google 的一套 A/B testing experiment framework，它可以分流 production 流量並讓你對不同屬性的流量做切割。所以這裡的意思應該是：找一些類似（或同樣來源）的 pipeline 去驗證一下你的演算法拿到的數據有沒有異常。
-
-2. 測試將模型搬出訓練演算法。確保模型能在 serving environment  給出跟訓練環境同樣的成效 \(see Rule **\#37**\)。
-
-機器學習有不可預測性，所以確保你有測試 have tests for the code for creating examples in training and serving, and that you can load and use a fixed model during serving
-
-並且，了解你的資料也是很重要的，參考 [Practical Advice for Analysis of Large, Complex Data Sets.](http://www.unofficialgoogledatascience.com/2016/10/practical-advice-for-analysis-of-large.html)
-
-### Rule 6 - 小心複製 pipeline 時遺漏了資料
-
-Often we create a pipeline by copying an existing pipeline \(i.e. [cargo cult programming](https://en.wikipedia.org/wiki/Cargo_cult_programming)\), and the old pipeline drops data that we need for the new pipeline. For example, the pipeline for Google  
-Plus What’s Hot drops older posts \(because it is trying to rank fresh posts\). This pipeline was copied to use for Google Plus Stream, where older posts are still meaningful, but the pipeline  
-was still dropping old posts. Another common pattern is to only log data that was seen by the user. Thus, this data is useless if we want to model why a particular post was not seen by the  
-user, because all the negative examples have been dropped. A similar issue occurred in Play. While working on Play Apps Home, a new pipeline was created that also contained examples  
-from two other landing pages \(Play Games Home and Play Home Home\) without any feature to disambiguate where each example came from.
-
-#### Rule 7 - 將啟發式/捷思法轉換成特徵，或在外部處理它們
-
-通常 ML 試圖解決的問題都不是全新的。排名 (ranking)、分類 (classifying) 或任何其他問題，都有現成的系統在解決。這代表著有一大堆的規則或啟發式方法可用。這些類似的啟發式作法可以在調整 ML 演算法的時候順道載你一程 (give you a lift)。
-
-這些啟發式作法應該要被挖掘 (mined) 出任何它們所擁有的資訊，這出於兩個原因：第一，這將會讓你在轉換到 ML 系統的過程中比較平滑、順利；第二，通常這些規則包含了關於這個系統所需的大量直覺 (intuition)，而你不會想把它們丟掉。有四種可以利用現成啟發式的方法：
-
-1. Preprocess using the heuristic. If the feature is incredibly awesome, then this is an option. For example, if, in a spam filter, the sender has already been blacklisted, don’t try
-   to relearn what “blacklisted” means. Block the message. This approach makes the most sense in binary classification tasks.
-2. Create a feature. Directly creating a feature from the heuristic is great. For example, if you use a heuristic to compute a relevance score for a query result, you can include the score as the value of a feature. Later on you may want to use machine learning techniques to massage the value \(for example, converting the value into one of a finite
-   set of discrete values, or combining it with other features\) but start by using the raw value produced by the heuristic.
-3. Mine the raw inputs of the heuristic. If there is a heuristic for apps that combines the number of installs, the number of characters in the text, and the day of the week, then
-   consider pulling these pieces apart, and feeding these inputs into the learning separately. Some techniques that apply to ensembles apply here \(see **Rule \#40**\).
-4. Modify the label. This is an option when you feel that the heuristic captures information not currently contained in the label. For example, if you are trying to maximize the number of downloads, but you also want quality content, then maybe the solution is to multiply the label by the average number of stars the app received. There is a lot of space here for leeway. See the section on [“Your First Objective”](#your-first-objective). Do be mindful of the added complexity when using heuristics in an ML system. Using old heuristics in your new machine learning algorithm can help to create a smooth transition, but think about whether there is a simpler way to accomplish the same effect.
-
-
+ 千万注意引入经验法则给你机器学习模型带来的复杂度的提升。也许这样做会让你切换更加平滑，但是也想想有没有更简单的办法能够达到同样效果。
 
