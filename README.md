@@ -49,7 +49,7 @@
 
 译者有:
 * klb3713 [github](https://github.com/klb3713)
-* eric [blog: MindGeek](mindgeek.github.io)
+* eric [blog: MindGeek](https://mindgeek.github.io)
 
 
 
