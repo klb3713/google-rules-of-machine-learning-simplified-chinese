@@ -1,70 +1,59 @@
-## Feature engineering
+# 特征工程
 
-> In the first phase of the lifecycle of a machine learning system, the important issue is to get the training data into the learning system, get any metrics of interest instrumented, and create a serving infrastructure. **After you have a working end to end system with unit and system tests instrumented, Phase II begins.**
+ 在机器学习系统生命周期的第一个阶段，重要的是给系统喂训练数据，关注感兴趣的指标，并且部署上线。**一旦你把这套系统从头到尾建立好了，并且加上必要的单元和系统性测试后，就可以进入第二阶段了。**
 
-#### Rule 16 - Plan to launch and iterate.
+ 在第二阶段，有很多成果唾手可得。会有很多显然的特征可以加进系统。因此，通常第二阶段会需要尽可能往系统里面塞特征，并且进行简单的组合。在这个阶段，所有指标可能都持续增长。会有很多的发布，这个时候也是拉人往你的nb系统里扔数据的绝佳时机。
 
-Don’t expect that the model you are working on now will be the last one that you will launch, or even that you will ever stop launching models. Thus consider whether the complexity you are
-adding with this launch will slow down future launches. Many teams have launched a model per quarter or more for years. There are three basic reasons to launch new models:
+## Rule 16 - 计划发布和迭代
 
-1. you are coming up with new features,
-2. you are tuning regularization and combining old features in new ways, and/or
-3. you are tuning the objective.
+ 别指望你现在的模型是最终发布的版本，更别指望有一天你会停止发布模型。所以注意你现在给系统增加的复杂度，是否会拖慢未来的发布。很多团队按照季度，甚至按照年度来发布模型。关于发布模型，这里有三个基本原因：
 
-Regardless, giving a model a bit of love can be good: looking over the data feeding into the example can help find new signals as well as old, broken ones. So, as you build your model, think about how easy it is to add or remove or recombine features. Think about how easy it is to create a fresh copy of the pipeline and verify its correctness. Think about whether it is possible to have two or three copies running in parallel. Finally, don’t worry about whether feature 16 of 35 makes it into this version of the pipeline. You’ll get it next quarter.
+ 1. 你增加了新特征,
+ 2. 你调整了正则方式，用新方式组合老特征，并且/或者
+ 3. 你调整了优化目标.
 
-#### Rule 17 - Start with directly observed and reported features as opposed to learned features.
+无论怎样，在模型上上点心总是好的：关注喂给模型的新老数据，会帮助你捕捉系统的新信号。所以，当你构建模型时候，想想增加、移除、组合各种特征容易吗。想想复制 pipeline 并且让其在其他地方运转良好容易吗。想想是否可以两三条并行计算。最后，不用担心16号特征或者35号特征是否还有用，反正下个 Q 你就得考虑这个问题了。
 
-This might be a controversial point, but it avoids a lot of pitfalls. First of all, let’s describe what a
-learned feature is. A learned feature is a feature generated either by an external system (such as an unsupervised clustering system) or by the learner itself (e.g. via a factored model or deep learning). Both of these can be useful, but they can have a lot of issues, so they should not be in
-the first model. If you use an external system to create a feature, remember that the system has its own
-objective. The external system's objective may be only weakly correlated with your current objective. If you grab a snapshot of the external system, then it can become out of date. If you
-update the features from the external system, then the meanings may change. If you use an external system to provide a feature, be aware that they require a great deal of care.
-The primary issue with factored models and deep models is that they are non­-convex. Thus, there is no guarantee that an optimal solution can be approximated or found, and the local
-minima found on each iteration can be different. This variation makes it hard to judge whether the impact of a change to your system is meaningful or random. By creating a model without
-deep features, you can get an excellent baseline performance. After this baseline is achieved, you can try more esoteric approaches.
+> Eric：最后一句同样没太看懂。
 
-#### Rule 18 - Explore with features of content that generalize across contexts.
+## Rule 17 - 从直接观察到和得到的特征 而非习得的特征开始
 
-Often a machine learning system is a small part of a much bigger picture. For example, if you imagine a post that might be used in What’s Hot, many people will plus­-one, re-­share, or
-comment on a post before it is ever shown in What’s Hot. If you provide those statistics to the learner, it can promote new posts that it has no data for in the context it is optimizing. YouTube Watch Next could use number of watches, or co­-watches (counts of how many times one video was watched after another was watched) from YouTube search. You can also use explicit user
-ratings. Finally, if you have a user action that you are using as a label, seeing that action on the document in a different context can be a great feature. All of these features allow you to bring new content into the context. Note that this is not about personalization: figure out if someone likes the content in this context first, then figure out who likes it more or less.
+这也许是个争议点，但是它的确可以避免很多坑。首先，我们看一下什么是习得特征。习得特征是被外部系统（比如无监督聚类系统）或者学习器自己（比如向量机或者深度学习）学习产生的特征。这些特征也许有用，但是同样也会带来不少问题，尽量别在你的第一个模型上用这些特征。如果你用外部系统产生一个特征，一定记得这个外部系统是要有他自己的优化目标。外部系统的目标也许和你的模型只有很弱的相关性。你用了外部系统的一个快照，他就会过时。如果你更新了外部系统的特征，意义也许就变了。如果你的确用了外部系统产生的特征，一定要多加小心。
+向量机和深度模型最大的问题是--他们是非凸的。也就是说，没法保证能够得到甚至逼近全局最优解，每次迭代，可能都会得到不同的局部最优解。这种不确定性使得很难判断究竟系统的变化是某个特这个你变更带来的，还是纯粹随机得来。不用一些深度特征，你也能得到非常不错的基线表现。等你达成了基线，再试那些深奥的方式不迟。
 
-#### Rule 19 - Use very specific features when you can.
+## Rule 18 - 探索那些不同上下文产生内容的特征
 
-With tons of data, it is simpler to learn millions of simple features than a few complex features. Identifiers of documents being retrieved and canonicalized queries do not provide much
-generalization, but align your ranking with your labels on head queries.. Thus, don’t be afraid of groups of features where each feature applies to a very small fraction of your data, but overall coverage is above 90%. You can use regularization to eliminate the features that apply to too
-few examples.
+ 通常，一个机器学习系统是一个大得多的系统的一小部分。例如，你可以想象一篇可以用在 What's Hot（今日热点）中的帖子，在它出现在今日热点之前，也许很多人已经+1，分享或者评论了。如果你把这些特征给到学习器，他就能把 What' Hot 之外的更多帖子找到。Youtube 的 Watch Next，可以用Youtube搜索当中的观看数量，或者共同观看数量（就是某视频在其他视频之后被观看的次数）作为特征。你也可以使用明确的用户打分。最后，如果你用某一个用户行为作为 label，找到其他上下文的同样的行为作为特征就很不错。这些特征，都能帮你把新内容引入上下文。注意这可不是个性化：先找到当前上下文谁更喜欢这些内容，然后在找到谁更或者更不喜欢它。
 
-#### Rule 20 - Combine and modify existing features to create new features in human-understandable ways.
+ > Eric: 最后一句没看懂。
 
-There are a variety of ways to combine and modify features. Machine learning systems such as TensorFlow allow you to pre­process your data through [transformations](https://www.tensorflow.org/tutorials/linear/overview#feature-columns-and-transformations). The two most standard approaches are “discretizations” and “crosses”.
+## Rule 19 - 尽量使用明确的特征
 
-Discretization consists of taking a continuous feature and creating many discrete features from it. Consider a continuous feature such as age. You can create a feature which is 1 when age is less than 18, another feature which is 1 when age is between 18 and 35, et cetera. Don’t overthink the boundaries of these histograms: basic quantiles will give you most of the impact. Crosses combine two or more feature columns. A feature column, in TensorFlow's terminology, is a set of homogenous features, (e.g. {male, female}, {US, Canada, Mexico}, et cetera). A cross is a new feature column with features in, for example, *{male, female} × {US,Canada, Mexico}*. This new feature column will contain the feature (male, Canada). If you are using TensorFlow and you tell TensorFlow to create this cross for you, this (male, Canada) feature will be present
-in examples representing male Canadians. Note that it takes massive amounts of data to learn models with crosses of three, four, or more base feature columns.
+有了大量数据，可以很容易得到数以百万记的简单特征，而非几个复杂特征。召回的文档ID或者映射的Query泛化性也许并不好，但是足够帮你在热门query上排序。因此，不必担心那些只在小部分数据上适用的特征，他们的总体覆盖率也许超过90%。你还可以用正则化来消减那些样本覆盖太小的特征。
 
-Crosses that produce very large feature columns may overfit. For instance, imagine that you are doing some sort of search, and you have a feature column with words in the query, and you
-have a feature column with words in the document. You can combine these with a cross, but you will end up with a lot of features (see Rule **#21**). When working with text there are two
-alternatives. The most draconian is a dot product. A dot product in its simplest form simply counts the number of common words between the query and the document. This feature can
-then be discretized. Another approach is an intersection: thus, we will have a feature which is present if and only if the word “pony” is in the document and the query, and another feature
-which is present if and only if the word “the” is in the document and the query.
+## Rule 20 - 用人类能理解的方式去组合和修改那些现有特征以创造新特征
 
-#### Rule 21 - The number of feature weights you can learn in a linear model is roughly proportional to the amount of data you have.
+有很多方式来组合修改特征。机器学习系统，比如 TensorFlow 可以有[很多方式](https://www.tensorflow.org/tutorials/linear/overview#feature-columns-and-transformations))帮你预处理数据。两个最标准的方法是"离散化"和"交叉"。
+ 离散化是指拿到一个连续特征，然后基于他产生很多离散特征。就拿"年龄"这个连续特征来说，你可以创造一个特征，当年龄小于18岁时候，这个特征取1。再创造一个特征，当年龄在18到35之间时候取1，等等。不用太担心这样做会没有终点，只要覆盖大多数范围效果就很明显了。交叉组合两个或者多个特征，在 TensorFlow里是指把不同的特征列组合起来。一个特征列是指同质的信息集合，比如{男，女}, {美国，加拿大，墨西哥}等等。组合是指这些交叉组合起来，比如笛卡儿积:**{男，女} * {美国，加拿大，墨西哥}。新得特征列可能就变成类似（男，加拿大）这种。如果你用 TensorFlow 来帮你做特征交叉，这种特征就会出现在男性加拿大人的样本中。注意，要想让特征交叉起作用，需要大量的数据进行训练。
 
-There are fascinating statistical learning theory results concerning the appropriate level of complexity for a model, but this rule is basically all you need to know. I have had conversations in which people were doubtful that anything can be learned from one thousand examples, or that you would ever need more than 1 million examples, because they get stuck in a certain method of learning. The key is to scale your learning to the size of your data:
+交叉产生大量新特征的时候会产生过拟合问题。比如，你在做搜索，一个特征是query中的搜索词，一个特征是 document 中的词。当你做交叉的时候，也许产生大量的新特征（见 Rule #21）。当处理文本的时候，通常有两个选择。最残酷的是点乘，简版的点乘是指计算 query 和 document 同时出现词的数量。另一个选择是交叉，每个词是否同时出现在 query 和 document 里都有独立的特征去体现。
 
-1. If you are working on a search ranking system, and there are millions of different words in the documents and the query and you have 1000 labeled examples, then you should use a dot product between document and query features, [TF­IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf), and a half-­dozen other highly human-­engineered features. 1000 examples, a dozen features.
-2. If you have a million examples, then intersect the document and query feature columns, using regularization and possibly feature selection. This will give you millions of features,
-but with regularization you will have fewer. Ten million examples, maybe a hundred thousand features.
-3. If you have billions or hundreds of billions of examples, you can cross the feature columns with document and query tokens, using feature selection and regularization. You will have a billion examples, and 10 million features.
+> Eric: 这段翻译得不是很顺。需要丰富一下。
 
-Statistical learning theory rarely gives tight bounds, but gives great guidance for a starting point.
-In the end, use Rule **#28** to decide what features to use.
+## Rule 21 - 线性模型中你能学到的特征数量与你能得到的数据量正相关
 
-#### Rule 22 - Clean up features you are no longer using.
+虽然已经有 nb 的学习理论去证明了模型复杂度，但是你记住这条原则基本就够了。我和别人聊这类问题的时候，经常听他们说怀疑几千个样本根本学不到啥，或者你需要一百万个样本才能学一个像样的模型出来，他们这么说的时候通常被卡在某个模型的学习上没进展。关键是你的学习方法要和数据规模相匹配：
 
-Unused features create technical debt. If you find that you are not using a feature, and that combining it with other features is not working, then drop it out of your infrastructure. You want to keep your infrastructure clean so that the most promising features can be tried as fast as
-possible. If necessary, someone can always add back your feature. Keep coverage in mind when considering what features to add or keep. How many examples are covered by the feature? For example, if you have some personalization features, but only
-8% of your users have any personalization features, it is not going to be very effective. At the same time, some features may punch above their weight. For example, if you have a
-feature which covers only 1% of the data, but 90% of the examples that have the feature are positive, then it will be a great feature to add.
+1. 如果你面对的是一个搜索排序系统，文档和搜索词中有上百万的不同 words，那么你就应该用query 与文档的点乘来扩充 feature，比如用[TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf), 也要搭配一大批人工特征。一千样本，对应十来个特征。
 
+2. 如果你 有上百万的样本，那就交叉文档和query，正则化特征并做必要的选择。也许你会得到上百万的特征，然后正则化会让其变少一点。上千万的样本，也许上10w 的特征。
+
+3. 如果你有10亿，或者数百亿的样本，你可以直接交叉 document 和 query 的 token，用上特征选择和正则化。10亿样本对应千万级的特征。
+
+ 统计的学习理论很少给你很死的限制，但是拿来做指导还是很不错的。最后，用**Rule #28**讲到的原则去选择用哪些特征。
+
+## Rule 22 - 清理那些你不再用到的特征
+
+ 无用特征欠下技术债。如果你发现某个特征和与他有关的特征组合都没啥用了，就果断把它从你的系统里清理掉。系统干干净净，你才能快速发现那些有前途的特征。如有必要，其他人会再把特征加回来的。时刻记得特征覆盖率，以此评判哪些特征需要保留。特征覆盖了多少样本？例如，如果你的某个个性化特征只有8%的覆盖率，也许留着他就没那么高效了。同时，也许有些特征punch above their weight. 比如，如果你有一个特征只覆盖了1%的数据，但是90%的正样本都有这个特征，那么就应该加。
+
+> Eric: 什么叫 punch above their weight?
