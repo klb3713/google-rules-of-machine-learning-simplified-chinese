@@ -1,41 +1,32 @@
 
-### Training-Serving Skew
+# 训练和使用偏差
 
-> Training­-serving skew is a difference between performance during training and performance
-during serving. This skew can be caused by:
-* a discrepancy between how you handle data in the training and serving pipelines, or
-* a change in the data between when you train and when you serve, or
-* a feedback loop between your model and your algorithm.
+训练使用偏差是指模型在训练上的表现和在线上实际使用的表现不一致。这可能是以下原因带来的：
+* 训练和线上，处理数据的方式不同
+* 训练和线上，数据变了
+* 模型和算法的反馈循环
 
-> We have observed production machine learning systems at Google with training-­serving skew
-that negatively impacts performance. The best solution is to explicitly monitor it so that system
-and data changes don’t introduce skew unnoticed.
+在 Google 的实际机器学习应用中，我们发现这种训练和使用偏差的确对系统整体有负面影响。最好的解决办法是可以去监控这种偏差，以免系统和数据的变更引入更大偏差时候我们发现不了。
 
-#### Rule 29 - The best way to make sure that you train like you serve is to save the set of features used at serving time, and then pipe those features to a log to use them at training time.
+## Rule 29 - 让训练更接近使用的最佳方式是在线上把一堆特征用日志保存下来以便在训练时候使用
 
-Even if you can’t do this for every example, do it for a small fraction, such that you can verify the consistency between serving and training (see Rule **#37**). Teams that have made this measurement at Google were sometimes surprised by the results. YouTube home page switched to logging features at serving time with significant quality improvements and a reduction in code complexity, and many teams are switching their infrastructure as we speak.
+即使你没发每个样本都这么做，至少抽样来搞，这样你就可以调整训练和使用的一致性（见 Rule #37)。在 Google，这么做的团队往往会收获惊喜。YouTube 的首页业务采用这种日志化特征后，质量有重大改善，而且代码复杂度也下降了。在这片文章写就时，很多其他团队也在进行类似改造。
 
-#### Rule 30 - Importance weight sampled data, don't arbitrarily drop it!
+## Rule 30 - 给抽样后的数据乘上权重,不要直接扔掉！
 
-When you have too much data, there is a temptation to take files 1­12, and ignore files 13­99. This is a mistake: dropping data in training has caused issues in the past for several teams (see Rule **6**). Although data that was never shown to the user can be dropped, importance weighting is best for the rest. Importance weighting means that if you decide that you are going
-to sample example X with a 30% probability, then give it a weight of 10/3. With importance weighting, all of the calibration properties discussed in Rule **#14** still hold.
+当文件太多的时候，很可能你保留前12个文件，把剩下的13-99号文件丢了。这不对：因为在训练阶段直接扔文件在 Google 的许多团队中都造成过问题（参见 Rule #6)。 虽然用户没有见过的数据可以丢，但给剩下的数据乘上权重至关重要。意思是当你做30%抽样的时候，给一个10/3的权重。使用权重后，Rule#14中讨论的特征校准就能够起作用。
 
-#### Rule 31 - Beware that if you join data from a table at training and serving time, the data in the table may change.
+## Rule 31 - 在把线上和训练阶段的数据 join一个表时候要多加小心，表可能会变化
 
-Say you join doc ids with a table containing features for those docs (such as number of comments or clicks). Between training and serving time, features in the table may be changed.
-Your model's prediction for the same document may then differ between training and serving. The easiest way to avoid this sort of problem is to log features at serving time (see Rule **#32**). If the table is changing only slowly, you can also snapshot the table hourly or daily to get reasonably close data. Note that this still doesn’t completely resolve the issue.
+ 比如说你把 doc id 和这些 id的 feature离线数据（比如评论数、点击量等）join 起来。对于训练和线上，这表的内容是不同的，那么你模型在训练和线上对于同一个 doc id 的预测也会不同。避免这种情况发生的最简单方式就是在线上把特征用日志保存下来（见 Rule #32）。如果表的更新比较慢，你也可以按照小时或者天级做快照。但是请记住，这也不能100%解决问题。
 
-#### Rule 32 - Re-use code between your training pipeline and your serving pipeline whenever possible.
+## Rule 32 - 在可能的时候在训练和线上尽可能复用代码
 
-Batch processing is different than online processing. In online processing, you must handle each request as it arrives (e.g. you must do a separate lookup for each query), whereas in batch
-processing, you can combine tasks (e.g. making a join). At serving time, you are doing online processing, whereas training is a batch processing task. However, there are some things that
-you can do to re­use code. For example, you can create an object that is particular to your system where the result of any queries or joins can be stored in a very human readable way,
-and errors can be tested easily. Then, once you have gathered all the information, during serving or training, you run a common method to bridge between the human-­readable object
-that is specific to your system, and whatever format the machine learning system expects. **This eliminates a source of training-­serving skew.** As a corollary, try not to use two different programming languages between training and serving ­ that decision will make it nearly impossible for you to share code.
+ 批量处理和在线预测不同。在线预测，你必须在每个请求过来时候立即处理。（比如你必须对每个 query 做单独的查询），而在批处理时候，你可以合并任务（比如做一个 join）。服务阶段是在线预测，训练阶段是离线批处理。但是，有些情况下你可以在两者之间重用代码。比如，你可以创建一个系统专用的对象，这样在 join 或者是单独处理的时候，系统都能以一种非常易读的方式去存储，错误也能够及早被测试找到。然后，一旦你收集到了足够的信息，用一个通用的方法把这种人类易读的对象转化为模型可用的数据。**这样就排除了一个训练服务偏差的源头。**作为必然的结果，你最好别在训练和线上服务阶段用两种编程语言，这样会使得复用代码几乎不可能。
 
-#### Rule 33 - If you produce a model based on the data until January 5th, test the model on the data from January 6th and after.
+## Rule 33 - 如果你用1月5号之前的数据训练的系统，那么用1月6号和之后的数据去测试系统
 
-In general, measure performance of a model on the data gathered after the data you trained the model on, as this better reflects what your system will do in production. If you produce a model based on the data until January 5th, test the model on the data from January 6th. You will expect that the performance will not be as good on the new data, but it shouldn’t be radically worse. Since there might be daily effects, you might not predict the average click rate or conversion rate, but the area under the curve, which represents the likelihood of giving the positive example a score higher than a negative example, should be reasonably close.
+ 总得来说，测试数据的时间不要和训练数据的时间重叠，这样才能体现模型的预测能力。如果你用1月5号之前的数据训练的系统，那么用1月6号和之后的数据去测试系统。你可以预期模型在新数据的表现不会想训练时候那么好，但是也不应该太遭。也许会有天级效应，你也许不会去预测平均点击率或者转化率，但是曲线之下的空间（这里应该是指 AUC），应该会比较接近。
 
 #### Rule 34 - In binary classification for filtering (such as spam detection or determining interesting e­mails), make small short­term sacrifices in performance for very clean data.
 

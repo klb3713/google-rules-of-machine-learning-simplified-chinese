@@ -39,7 +39,6 @@
 
 > Eric: 这个 youtube 视频没细看，还不知道这句啥意思.
 
-#### Rule 14 - Starting with an interpretable model makes debugging easier.
 ## Rule 14 - 从一个可交互的模型开始 让查错更简单
 
 [Linear regression 线性回归](https://en.wikipedia.org/wiki/Linear_regression), [logistic regression 逻辑回归](https://en.wikipedia.org/wiki/Logistic_regression), 和[Poisson regression 泊松回归](https://en.wikipedia.org/wiki/Poisson_regression)  直接由统计模型衍生出来。 每个预测都可以被解释成一个概率或者是期望值。 这就使得他们比那些试图直接优化分类准确率或者排序效果的模型（0-1 loss, 各种 hinge losses等等）更具可解释性。比如，如果训练集的概率值与测试集或者线上的概率值偏差太多，那么很可能哪里出问题了。
