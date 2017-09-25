@@ -28,43 +28,39 @@
 
  总得来说，测试数据的时间不要和训练数据的时间重叠，这样才能体现模型的预测能力。如果你用1月5号之前的数据训练的系统，那么用1月6号和之后的数据去测试系统。你可以预期模型在新数据的表现不会想训练时候那么好，但是也不应该太遭。也许会有天级效应，你也许不会去预测平均点击率或者转化率，但是曲线之下的空间（这里应该是指 AUC），应该会比较接近。
 
-#### Rule 34 - In binary classification for filtering (such as spam detection or determining interesting e­mails), make small short­term sacrifices in performance for very clean data.
+## Rule 34 - 对于过滤场景的二分类问题（比如垃圾检测或者重要邮件检测），用小牺牲换取干净的数据
 
-In a filtering task, examples which are marked as negative are not shown to the user. Suppose you have a filter that blocks 75% of the negative examples at serving. You might be tempted to
-draw additional training data from the instances shown to users. For example, if a user marks an
-email as spam that your filter let through, you might want to learn from that. But this approach introduces sampling bias. You can gather cleaner data if instead during
-serving you label 1% of all traffic as “held out”, and send all held out examples to the user. Now your filter is blocking at least 74% of the negative examples. These held out examples can
-become your training data. Note that if your filter is blocking 95% of the negative examples or more, this becomes less
-viable. Even so, if you wish to measure serving performance, you can make an even tinier sample (say 0.1% or 0.001%). Ten thousand examples is enough to estimate performance quite
-accurately.
+在一个过滤任务中，被标为负的样本是不会再展示给用户的。(Eric: 这里作者的意思应该是被分类器判别为有问题的样本，在实际应用中应该是"正样本"）假如在线上你的分类器挡住了75%的正样本，你可能想用剩下展示给用户的东西作为训练集进一步完善你的分类器。比如你分类器漏掉的数据中，用户标记为垃圾邮件的做为新的正样本，并以此进行训练。但是这种方法就引入了抽样bias。你可以通过在线上保留1%小流量的方式来获取更加干净的样本，就是简单的对这个小流量不做任何过滤，直接发给用户。这样做的话，你至少还是可以拦截74%的垃圾邮件。注意，如果你的过滤器好到可以把95%以上的正样本都找出来，那么这个方法就没那么有用了。即便如此，如果你想度量线上表现，那么做一个更小的抽样（比如0.1%或者0.001%）。一万来个样本足够把模型表现体现出来了。
 
-#### Rule 35 - Beware of the inherent skew in ranking problems.
+> Eric: 对于过滤类的二分类问题，其实过滤行为本质上造成了 bias（即影响了不同样本给用户的展现机会）。对于非过滤的二分类问题，其实也一样的。比如 rank 中的展现位置同样会引入 bias，对于这种 bias 的处理，作者建议是留一个小流量。我们的实践是用轮展的方式来消除展现 bias，然后把轮展拿到的点击特征引入到模型中。
 
-When you switch your ranking algorithm radically enough that different results show up, you have effectively changed the data that your algorithm is going to see in the future. This kind of skew will show up, and you should design your model around it. There are multiple different approaches. These approaches are all ways to favor data that your model has already seen.
+## Rule 35 - 注意排序问题中的固有偏差
 
-1. Have higher regularization on features that cover more queries as opposed to those features that are on for only one query. This way, the model will favor features that are
-specific to one or a few queries over features that generalize to all queries. This approach can help prevent very popular results from leaking into irrelevant queries. Note
-that this is opposite the more conventional advice of having more regularization on feature columns with more unique values.
-2. Only allow features to have positive weights. Thus, any good feature will be better than a feature that is “unknown”.
-3. Don’t have document­only features. This is an extreme version of #1. For example, even if a given app is a popular download regardless of what the query was, you don’t want to
-show it everywhere<sup>4</sup>. Not having document­only features keeps that simple.
+如果你的排序算法换得足够频繁，那么模型看到的数据就会足够多样。那么这种偏差就随之而来了，你必须围绕这种变差了设计模型。这里有一些关于如何调整你模型已经见过的数据的方法。
 
-<sup>4 - The reason you don’t want to show a specific popular app everywhere has to do with the importance of
-making all the desired apps reachable. For instance, if someone searches for “bird watching app”, they
-might download “angry birds”, but that certainly wasn’t their intent. Showing such an app might improve
-download rate, but leave the user’s needs ultimately unsatisfied.</sup>
+1. 在覆盖更多query的特征上，正则化更多一些（即惩罚这些特征的权重），在只覆盖一个或几个的特征上，正则化少一些。通过这种方式， 模型就会偏向于使用那些覆盖少量query的特征，而非所有 query 都高的特征。这种方式可以避免全局都很受欢迎的结果传播到不相关的 query中去。注意这和高度正则化那些独立值的特征建议是相悖的。
 
-#### Rule 36 - Avoid feedback loops with positional features.
+> Eric: 最后一句没看懂.
 
-The position of content dramatically affects how likely the user is to interact with it. If you put an app in the first position it will be clicked more often, and you will be convinced it is more likely to be clicked. One way to deal with this is to add positional features, i.e. features about the position of the content in the page. You train your model with positional features, and it learns to weight, for example, the feature "1st­position" heavily. Your model thus gives less weight to other factors for examples with "1st­position=true". Then at serving you don't give any instances the positional feature, or you give them all the same default feature, because you are scoring candidates before you have decided the order in which to display them. Note that it is important to keep any positional features somewhat separate from the rest of the
-model because of this asymmetry between training and testing. Having the model be the sum of a function of the positional features and a function of the rest of the features is ideal. For example, don’t cross the positional features with any document feature.
+2. 只使用那些权值为正的特征。因此，只要特征值非空，就有贡献。
 
-#### Rule 37 - Measure training/serving skew.
+3. 不要只用语意特征（即和query无关的特征，比如全局 CTR 这种）。这是 Rule #1的一个特例。即使一个超热门app，你也不想让他出现在各种 query 下啊<sup>4</sup>。不只用语意特征的化，就很容易实现这个目标。
 
-There are several things that can cause skew in the most general sense. Moreover, you can divide it into several parts:
+<sup>4 - 不要让一个热门 app 到处出现，主要还是因为想保持多样 app 的可触达性。 比如有人搜索"看鸟app"，如果你推"愤怒的小鸟"，他们也许也会下载，但是这肯定不是用户的初衷。展现这样的热门结果，也许会提升安装量，但是用户的需求并没有得到真正满足。</sup>
 
-1. The difference between the performance on the training data and the holdout data. In general, this will always exist, and it is not always bad.
-2. The difference between the performance on the holdout data and the “next­day” data. Again, this will always exist. **You should tune your regularization to maximize the next­day performance.** However, large drops in performance between holdout and next­day data may indicate that some features are time-­sensitive and possibly degrading
-model performance.
-3. The difference between the performance on the “next­day” data and the live data. If you apply a model to an example in the training data and the same example at serving, it
-should give you exactly the same result (see Rule **#5**). Thus, a discrepancy here probably indicates an engineering error.
+> Eric: 想想我们的实体全局Entity CTR吧... 他的确跟我们的整体点击率带来了很大的贡献，不过确实也引入和很多的相关性问题。Google做得干脆多了。
+
+## Rule 36 - 避免位置相关特征的反馈循环
+
+内容的位置能够显著影响用户行为。放首位的 app 会被点的更多，那么他就一定更"好"吗？加入位置特征是应对这种情况的一个选择，比如直接加入展现位置作为特征。带着位置特征进行训练，模型就会学到位置特征的权重，比如"1号位置"特征的权重会很高。然后在线上，你不带位置特征给任何样本，或者只给默认值，因为这时候排第几还没确定呢。注意因为在训练和测试时候位置特征和其他特征的处理方式不同，所以你最好把他们分开。理想情况下干脆给位置特征和非位置特征建立俩模型（这里应该是指非线性模型，因为线性模型天然就是加和）。而且，不要把位置特征和其他非位置特征做交叉。
+
+## Rule 37 - 度量训练使用偏差
+
+大体上，有以下原因会造成偏差：
+
+1. 训练和测试数据的偏差。总的来说这个偏差会一直存在，但也不总是坏事。
+> Eric: 比如利用这种偏差来消除位置bias就不错。
+
+2. 留存数据和"第二天"数据的偏差。同样，这种偏差也会一直存在。**你应该调整正则方式，去最大化第二天模型的表现。** 然而留存数据和第二天数据的效果如果差得太多，也许意味着有时间敏感的特征存在，模型的表现下降。
+
+3. "第二天"数据和实时数据的偏差。如果你给同一个样本到训练期的模型与线上模型，他们应该预测结果完全一样（参见 Rule #5），如果不同很可能工程上引入了错误。
