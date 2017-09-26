@@ -21,8 +21,7 @@
 
 **相反，个人则倾向于追求那些他们可以直接优化的指标。** 大多数的机器学习工具也喜欢这样的设定。一个鼓捣出新特征的工程师，立刻就可以在这样的环境下进行产出。还有一种机器学习致力于解决这种问题，多目标学习。比如，人们可以形式化一个优先的满足问题，考虑多个指标，并且对这些指标的线性组合做优化。即便如此，也不是所有的指标都能作为机器学习的目标：一个文档被点击，一个 app 被下载，多半是因为用户看到了他。但是用户为啥来你的站点缺难解释得多。如何预测站点整体在未来的表现，是一个[AI­complete](https://en.wikipedia.org/wiki/AI-complete)问题，和计算机视觉以及自然语言处理一样难。
 
-#### Rule 40 - Keep ensembles simple.
-## Rule 40 - 模型组合 保持简单
+## Rule 40 - 模型组合保持简单
 
  用原始特征直接进行排序的单一模型 debug 和理解起来都最简单。但是模型组合（用其他多个模型的输出做特征）可能效果更好。**为了简单起见，一个模型要莫是只用其他模型的输出做输入，要莫是拿原始特征的基础模型，别混用。** 如果上层模型没有和底层模型一起训练，那么组合的效果可能不会好。
 
@@ -30,20 +29,18 @@
 
 ## Rule 41 - 当遭遇效果瓶颈，与其提炼旧特征，还不如去找哪些能带来信息量的新特征
 
- 已经加了用户的人口统计学特征（比如性别、年龄等），已经加了文档中的词特征，也试过了 template exploration，也调了正则化。已经几个 q 没有1%以上的提升可以用来上线了。咋整？
-You’ve added some demographic information about the user. You've added some information about the words in the document. You have gone through template exploration, and tuned the
-regularization. You haven’t seen a launch with more than a 1% improvement in your key metrics in a few quarters. Now what?
-It is time to start building the infrastructure for radically different features, such as the history of documents that this user has accessed in the last day, week, or year, or data from a different property. Use [wikidata](https://en.wikipedia.org/wiki/Wikidata) entities or something internal to your company (such as Google’s [knowledge graph](https://en.wikipedia.org/wiki/Knowledge_Graph)). Use deep learning. Start to adjust your expectations on how much return you expect on investment, and expand your efforts accordingly. As in any engineering project, you have to weigh the benefit of adding new features against the cost of increased complexity.
+ 已经加了用户的人口统计学特征（比如性别、年龄等），已经加了文档中的词特征，也试过了 template exploration，也调了正则化。已经几个q 没有1%以上的提升可以用来上线了。咋整？这个时候应该建立新的基础设施，引入差异化更大的特征，比如某用户过去一天，一周甚至一年访问过的内容或者是其他渠道获得的数据。用[wikidata](https://en.wikipedia.org/wiki/Wikidata) 维基百科实体或者是公司内部的资源（如 Google 的知识图谱[knowledge graph](https://en.wikipedia.org/wiki/Knowledge_Graph))。用上深度学习。开始调整投入和产出的预期，开始考量付出的效果。像在一个工程问题上一样去思考，在引入收益和引入复杂度之间仔细权衡。
 
-#### Rule 42 - Don't expect diversity, personalization, or relevance to be as correlated with popularity as you think they are.
+## Rule 42 - 别指望多样性，个性化或者相关性如你预期那样让产品更热
 
-Diversity in a set of content can mean many things, with the diversity of the source of the content being one of the most common. Personalization implies each user gets their own results. Relevance implies that the results for a particular query are more appropriate for that query than any other. Thus all three of these properties are defined as being different from the ordinary.
-The problem is that the ordinary tends to be hard to beat.
+ 多样性有很多意思，来源的多样性最有代表性。个性化是说每个人看到自己独特的结果。相关性意味着某个 query 的结果和别的 query 的结果有区分性。所以这三个概念都和传统意义不太一样，而传统意义给人带来的影响又很难改变。
 
-Note that if your system is measuring clicks, time spent, watches, +1s, reshares, et cetera, you are measuring the popularity of the content. Teams sometimes try to learn a personal model with diversity. To personalize, they add features that would allow the system to personalize (some features representing the user’s interest) or diversify (features indicating if this document has any features in common with other documents returned, such as author or content), and find that those features get less weight (or sometimes a different sign) than they expect. This doesn’t mean that diversity, personalization, or relevance aren’t valuable.\* As pointed out in the previous rule, you can do post-­processing to increase diversity or relevance. If you see longer term objectives increase, then you can declare that diversity/relevance is valuable, aside from popularity. You can then either continue to use your post­-processing, or directly modify the objective based upon diversity or relevance.
+ > Eric: 最后一句没翻译好。
+
+ 注意，如果你的系统衡量点击，停留时间，观看，+1，分享等等，你衡量的其实是产品热度。一些团队尝试去训练一个个性化模型来增加多样性。为了个性化，他们增加个性化的特征（一些可以体现用户个人兴趣的特征）或者多样性的特征（某些文档具备而其他文档不具备的特征，比如作者或内容），结果发现这些特征的权重没有预想当中那样大（甚至有时候负向）。就像之前 Rule 提到的那样，你可以用后处理的方式来增加多样性和相关性。如果发现长线的目标涨了，那么就可以声称多样性/相关性是有价值的，而不去管热度是否提升了。你可以继续使用后处理，或者干脆改掉优化目标以直接提升多样性和相关性。
 
 <sup>[Google Research Blog - App Discovery With Google Play](https://research.googleblog.com/2016/12/app-discovery-with-google-play-part-2.html?m=1)
 
-#### Rule 43 - Your friends tend to be the same across different products. Your interests tend not to be.
+## Rule 43 - 你的朋友也许在不同产品上的行为差不多，但你不是
 
-Teams at Google have gotten a lot of traction from taking a model predicting the closeness of a connection in one product, and having it work well on another. Your friends are who they are. On the other hand, I have watched several teams struggle with personalization features across product divides. Yes, it seems like it should work. For now, it doesn’t seem like it does. What has sometimes worked is using raw data from one property to predict behavior on another. Also, keep in mind that even knowing that a user has a history on another property can help. For instance, the presence of user activity on two products may be indicative in and of itself.
+Google的很多团队已经在不同产品的模型迁移之间做了很多事情，并且效果不错。你朋友就是你朋友（意思是他们的行为可以在多个产品之间迁移？）但是从另一个角度讲，我也见过很多团队在不同产品的个性化特征之中挣扎。这么做应该有效，但至少现在还没有。有些成功案例是直接把另一个产品原始数据拿过来，用在另一个产品上。同时要注意，即使只是知道用户在用另外的产品可能也可以帮上忙。例如，两个产品的用户活跃度可以相互参考。
