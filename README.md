@@ -2,6 +2,7 @@
 
 * 原文：["Rules of Machine Learning"](http://martin.zinkevich.org/rules_of_ml/rules_of_ml.pdf)
 * Git Book [《机器学习法则：机器学习工程最佳实践》》](https://mindgeek.gitbooks.io/rules-of-machine-learning-sample-chinese/content/)
+* 贡献翻译或提交Issue，请访问[项目的Github地址](https://github.com/MindGeek/google-rules-of-machine-learning-simplified-chinese)
 
 17年8月开始，尝试结合英文和繁体中文版，并结合在百度搜索推荐的工程实践，翻译一版带批注的简体中文版。批注采用
 > 译者: 具体批注
