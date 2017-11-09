@@ -1,48 +1,37 @@
 
-### Human Analysis of the System
+# 系统的人工分析
 
-> Before going on to the third phase of machine learning, it is important to focus on something that is not taught in any machine learning class: how to look at an existing model, and improve it. This is more of an art than a science, and yet there are several anti-­patterns that it helps to avoid.
+在进入第三步之前，学点课堂上没交的东西非常重要：如何维护和提升现有模型。这更像艺术而非技术，而且有很多的坑需要避免。
 
-#### Rule 23 - You are not a typical end user.*
+## Rule 23 - 你不是一个典型用户
 
-This is perhaps the easiest way for a team to get bogged down. While there are a lot of benefits to fish-fooding (using a prototype within your team) and dog-fooding (using a prototype within your company), employees should look at whether the performance is correct. While a change which is obviously bad should not be used, anything that looks reasonably near production should be tested further, either by paying laypeople to answer questions on a crowdsourcing platform, or through a live experiment on real users. There are two reasons for this. The first is that you are too close to the code. You may be looking for a particular aspect of the posts, or you are simply too emotionally involved (e.g. confirmation bias). The second is that your time is too valuable. Consider the cost of 9 engineers sitting in a one hour meeting, and think of how many contracted human labels that buys on a crowdsourcing platform.
+这也许是团队最容易陷入的泥潭了。让团队或者公司范围内的人来测试（使用）你的系统会是一个好主意。任何看起来还不错的改动都应该用这种方式事先测试一下，要么找外包团队来标注数据，要么用一个线上实验环境引入真实用户。如果是你的话，可能会刻意去找某些帖子，或者干脆感情用事（比如 确认偏差）。另外你的时间也很宝贵。比较一下9个工程师坐那开1小时的会的花费能在外包平台上雇多少人吧。
 
-If you really want to have user feedback, **use user experience methodologies**. Create user personas (one description is in Bill Buxton’s [~~Designing~~ *Sketching User Experiences*](https://www.amazon.com/Sketching-User-Experiences-Interactive-Technologies/dp/0123740371)) early in a process and
-do usability testing (one description is in Steve Krug’s [*Don’t Make Me Think*](https://www.amazon.com/Dont-Make-Me-Think-Usability/dp/0321344758)) later. User personas involve creating a hypothetical user. For instance, if your team is all male, it might help to design a 35­-year old female user persona (complete with user features), and look at the results it generates rather than 10 results for 25­-40 year old males. Bringing in actual people to watch their reaction to your site (locally or remotely) in usability testing can also get you a fresh perspective.
+ 如果你真想拿到用户反馈，**用用户研究的方法**。在早期，创建用户画像（在 Bill Buxton 的书[Sketching User Experiences](https://www.amazon.com/Sketching-User-Experiences-Interactive-Technologies/dp/0123740371)中有描述），紧接着做可用性测试（在 Steve Krug的书[Don't Make Me Think](https://www.amazon.com/Dont-Make-Me-Think-Usability/dp/0321344758)。用户画像是创造假想用户，比如，如果你团队都是男性，那么创建一个35岁的女性用户画像，然后看看产品这对这个典型用户的产出结果是什么就会挺有帮助的。把真实用户引入到你的站点（本地或远程），也会让你得到一些比较新颖的观点。
 
-<sup>[Google Research Blog - How to measure translation quality in your user interfaces](https://research.googleblog.com/2015/10/how-to-measure-translation-quality-in.html?m=1)
 
-#### Rule 24 - Measure the delta between modules
+## Rule 24 - 衡量模型间的差异
 
-One of the easiest, and sometimes most useful measurements you can make before any users have looked at your new model is to calculate just how different the new results are from production. For instance, if you have a ranking problem, run both models on a sample of queries through the entire system, and look at the size of the symmetric difference of the results
-(weighted by ranking position). If the difference is very small, then you can tell without running an experiment that there will be little change. If the difference is very large, then you want to make sure that the change is good. Looking over queries where the symmetric difference is high
-can help you to understand qualitatively what the change was like. Make sure, however, that the system is stable. Make sure that a model when compared with itself has a low (ideally zero)
-symmetric difference.
+最简单并且尝尝很有效的办法之一，就是在用户真正用你的模型之前，和线上效果做一个对比。比如你在解决一个排序的问题，对比一下新老模型在排序最终效果上的差异。如果差异很小，那么你不用做线上实验也知道最终的效果差别不大。如果差异很大，那么做实验去验证这个差异是否一定带来很大的线上收益。查看差异较大的 query 结果，可以让你了解到变更的实际表现。但是要确保系统是稳定的。确保模型和自己比的时候，方差足够小（理想情况是0）。
 
-#### Rule 25 - When choosing models, utilitarian performance trumps predictive power.
+## Rule 25 - 选择模型的时候，关注最终效果而非模型预测效果
 
-Your model may try to predict click­-through-­rate. However, in the end, the key question is what you do with that prediction. If you are using it to rank documents, then the quality of the final ranking matters more than the prediction itself. If you predict the probability that a document is spam and then have a cutoff on what is blocked, then the precision of what is allowed through matters more. Most of the time, these two things should be in agreement: when they do not
-agree, it will likely be on a small gain. Thus, if there is some change that improves log loss but degrades the performance of the system, look for another feature. When this starts happening more often, it is time to revisit the objective of your model.
+你的模型也许尝试预测 CTR（Click Through Rate)。但是最终，关键问题是你如何使用这个预测值。如果你用他来排序，那么最终的排序质量比预测本身更重要。如果你用来检测垃圾消息并且用来做屏蔽，那么放过内容的准确率就更重要。大多数情况下，这两件事情要达成一致（即模型预测目标也系统最终目标）：如果他们不一致，那么收益会很小。因此，如果某些变更使得log loss（交叉熵）变低，但是使得系统整体指标变差，那么就忽略这个变更吧。如果经常性的遇到这种问题，那么调整你模型的优化目标吧。
 
-#### Rule 26 - Look for patterns in the measured errors, and create new features.
+## Rule 26 - 在预测错误的样本中找规律，创造新的特征
 
-Suppose that you see a training example that the model got “wrong”. In a classification task, this could be a false positive or a false negative. In a ranking task, it could be a pair where a positive was ranked lower than a negative. The most important point is that this is an example that the
-machine learning system knows it got wrong and would like to fix if given the opportunity. If you give the model a feature that allows it to fix the error, the model will try to use it.
-On the other hand, if you try to create a feature based upon examples the system doesn’t see as mistakes, the feature will be ignored. For instance, suppose that in Play Apps Search,
-someone searches for “free games”. Suppose one of the top results is a less relevant gag app. So you create a feature for “gag apps”. However, if you are maximizing number of installs, and people install a gag app when they search for free games, the “gag apps” feature won’t have the effect you want.
+ 假设你在研究一个模型预测错了的样本。在一个分类任务中，这可能是一个 FP（False Positive) 或者 FN(False Negative) 样本。在一个排序人物中，这可能是一个 pair 预测错了排序顺序。重点是这是一个模型知道预测错了的样本，如果你提供了新的特征，模型可能就会用上。 反过来说，如果你再用一个分对了的样本中存在的特征，系统会把他忽略掉。比如在 Play 的 Apps Search 中对于"免费游戏"的搜索。你发现排在前面的都是不太相关的 gag 应用，所以你添加了一个gag 应用的特征。但是，如果你想最大化安装量，而搜索免费游戏的用户也会安装 gag 应用，那么是否是gag应用这个特征对你来说就是没用的。
 
-Once you have examples that the model got wrong, look for trends that are outside your current feature set. For instance, if the system seems to be demoting longer posts, then add post
-length. Don’t be too specific about the features you add. If you are going to add post length, don’t try to guess what long means, just add a dozen features and the let model figure out what to do with them (see Rule **#21**). That is the easiest way to get what you want.
+ 一旦你拿到了模型分错了的样本，寻找那些目前没在你的特征集合中的趋势。比如如果系统现在对比较长的文章打压较大，那么加入文章长度特征。不要对特征太过细究。不要去详细追求长度的意义，直接加上几个相关特征，然后让模型自己去甄选判断（参见 Rule #21）。这是达成目标最简单的方式。
 
-#### Rule 27 - Try to quantify observed undesirable behavior.
+## Rule 27 - 尝试去量化那些可观察到的不符合预期的行为
 
-Some members of your team will start to be frustrated with properties of the system they don’t like which aren’t captured by the existing loss function. At this point, they should do whatever it takes to turn their gripes into solid numbers. For example, if they think that too many “gag apps” are being shown in Play Search, they could have human raters identify gag apps. (You can feasibly use human-­labelled data in this case because a relatively small fraction of the queries account for a large fraction of the traffic.) If your issues are measurable, then you can start using them as features, objectives, or metrics. The general rule is **“measure first, optimize second”**.
+当一些大家不愿见到的东西存在于系统，但是当前的又没有损失函数去衡量他的时候，一些团队成员可能会开始沮丧了。这个时候，他们应该尽量去量化这些现象。比如，如果他们觉得在 app 搜索时候展现了太多的"gag"应用了，就应该用人肉把gag应用标出来。（你总是可以用上人肉--在这个 case 上是人肉标注，因为出 gag 应用的 query 量相对大盘来说很少）。如果你的问题可以被量化，那么尝试这把他们加入到特征中来。总的规则是：**先量化，再优化。**
 
-#### Rule 28 - Be aware that identical short-term behavior does not imply identical long-term behavior.
+## Rule 28 - 注意短期表现不错不代表长期表现也良好
 
-Imagine that you have a new system that looks at every doc_id and exact_query, and then calculates the probability of click for every doc for every query. You find that its behavior is
-nearly identical to your current system in both side by sides and A/B testing, so given its simplicity, you launch it. However, you notice that no new apps are being shown. Why? Well,
-since your system only shows a doc based on its own history with that query, there is no way to learn that a new doc should be shown.
+假如你有一个用来预测点击率的新系统，特征是文档 ID 和 query 本身。这个模型可能在历史数据上的离线和 A/B实验都很好，于是因为他很简单，你就上线了。但是你会发现新的 apps 就出不来了。为什么呢？因为系统只依靠 query 中历史出现过的信息做预测，没办法学到新来一个 app 应该怎么办。
+ 想知道系统在长期的表现是否好，唯一的办法就是让他用上线之后的线上真实数据。但这很难实现。
 
-The only way to understand how such a system would work long­term is to have it train only on data acquired when the model was live. This is very difficult.
+ > Eric: 在我们的应用当中，线上时效性特征的采集，以及轮展采集样本是越来越重要的工作。
 

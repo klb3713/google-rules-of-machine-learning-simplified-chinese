@@ -1,63 +1,46 @@
-## Slow Growth and Optimization and Complex models
+# 缓慢增长、优化和复杂模型
 
-> There will be certain indications that the second phase is reaching a close. First of all, your monthly gains will start to diminish. You will start to have tradeoffs between metrics: you will see some rise and others fall in some experiments. This is where it gets interesting. Since the gains
-are harder to achieve, the machine learning has to get more sophisticated. A caveat: this section has more blue-­sky rules than earlier sections. We have seen many teams
-go through the happy times of Phase I and Phase II machine learning. Once Phase III has been reached, teams have to find their own path.
+有一些迹象表明，第二阶段已经达成。首先，月收入可能会缩减。你不得不在多个指标中做取舍：一个实验中，某些指标上涨，但是某些指标下跌。这就有意思了。因为收入上涨很难，模型就得更加复杂。警告：这章的内容更加像 blue-sky rules（Eric：意思是非普适的准则吧），我们见过很多团队度过了机器学习的第一和第二阶段的美好时光后，到了第三阶段就只能各显神通了。
 
-#### Rule 38 - Don't waste time on new features if unaligned objectives have become the issue.
+## Rule 38 - 如果优化目标没对齐就别浪费时间去找新特征了
 
-As your measurements plateau, your team will start to look at issues that are outside the scope of the objectives of your current machine learning system. As stated before, if the product goals are not covered by the existing algorithmic objective, you need to change either your objective
-or your product goals. For instance, you may optimize clicks, plus-­ones, or downloads, but make launch decisions based in part on human raters.
+ 当度量达到了瓶颈，团队开始面临老模型优化目标没有衡量到的那些问题。像刚在提到的，如果当前的算法目标没有涵盖产品目标，就得花时间去改变产品目标或者算法目标。比如，你去优化点击，点赞或者下载，但是是否决定上线还是依赖人工打分的时候。
 
-#### Rule 39 - Launch decisions are a proxy for long-term product goals.
+## Rule 39 - 上线决策是长线产品目标的代理
 
-Alice has an idea about reducing the logistic loss of predicting installs. She adds a feature. The
-logistic loss drops. When she does a live experiment, she sees the install rate increase. However, when she goes to a launch review meeting, someone points out that the number of
-daily active users drops by 5%. The team decides not to launch the model. Alice is disappointed, but now realizes that launch decisions depend on multiple criteria, only some of
-which can be directly optimized using ML. The truth is that the real world is not dungeons and dragons: there are no “hit points” identifying the health of your product. The team has to use the statistics it gathers to try to effectively
-predict how good the system will be in the future. They need to care about engagement, 1 day active users (DAU), 30 DAU, revenue, and advertiser’s return on investment. These metrics that are measureable in A/B tests in themselves are only a proxy for more long­term goals: satisfying users, increasing users, satisfying partners, and profit, which even then you could consider proxies for having a useful, high quality product and a thriving company five years from now.
+ 爱丽丝有一个优化下载预测模型的主意。她加了一个新特征，果然模型表现变好了。她做一个线上实验，安装率的确也涨了。但是当她去参加发布评审会时，有人指出 DAU（日活跃用户量）下降了5%。团队决定不发布这个心模型。爱丽丝觉得很沮丧，但是也意识到上线决策依赖很多条件，而只有一部分能被机器学习直接优化。现实世界不是"龙与地下城"游戏：没有一个单一的"hit points"来表明产品的健康度。团队需要从收集到的所有指标来判断系统的未来。他们需要关注沉浸度，1日 DAU，30日 DAU，收入和广告商的回报。在 A/B test 实验中的那些可以被度量的指标，只是真实长远目标的一个代理：用户满意度，用户增长，合作伙伴满意度，收入，甚至是那些你没发找到衡量指标的长远目标，比如产品的有用程度，质量好坏以及公司未来五年的持续繁荣。
 
-**The only easy launch decisions are when all metrics get better (or at least do not get worse).** If the team has a choice between a sophisticated machine learning algorithm, and a
-simple heuristic, if the simple heuristic does a better job on all these metrics, it should choose the heuristic. Moreover, there is no explicit ranking of all possible metric values. Specifically, consider the following two scenarios:
+** 只有所有指标都涨了（或者至少没跌），发布决策才容易做。** 如果有一个精致的机器学习模型，和一个土了吧唧的人工规则模型放在那给团队选，如果人工规则模型在指标上表现更好，当然应该选人工规则。更进一步，关于不同指标的重要度，其实也没有定论。比如下面这两个情况：
 
-| Experiment | Daily Active Users | Revenue/Day |
-|------------|--------------------|-------------|
-| A          | 1 million          | $4 million  |
-| B          | 2 million          | $2 million  |
+| 实验 |  日活跃用户数 | 收入/天 |
+|------|-------------|--------|
+| A     | 100w    | $400w  |
+| B     | 200w    | $200w  |
 
-If the current system is A, then the team would be unlikely to switch to B. If the current system is B, then the team would be unlikely to switch to A. This seems in conflict with rational behavior: however, predictions of changing metrics may or may not pan out, and thus there is a large risk involved with either change. Each metric covers some risk with which the team is concerned. Moreover, no metric covers the team’s ultimate concern, “where is my product going to be five
-years from now”?
+ 如果当前系统是 A，团队可能选择切换到 B。如果当前用的是 B，团队也能原因切换为 A。这么做看起来并不理性：但是很难讲这么切换会利大于弊，还是弊大于利，因此会带来很大的风险。每个指标都会带来一些风险，但是没有指标能够涵盖团队的终极问题，"五年后我的产品应该是什么样子？"
 
-**Individuals, on the other hand, tend to favor one objective that they can directly optimize**. Most machine learning tools favor such an environment. An engineer banging out new features
-can get a steady stream of launches in such an environment. There is a type of machine learning, multi­-objective learning, which starts to address this problem. For instance, one can
-formulate a constraint satisfaction problem that has lower bounds on each metric, and optimizes some linear combination of metrics. However, even then, not all metrics are easily framed as machine learning objectives: if a document is clicked on or an app is installed, it is because that the content was shown. But it is far harder to figure out why a user visits your site. How to predict the future success of a site as a whole is [AI­complete](https://en.wikipedia.org/wiki/AI-complete), as hard as computer vision or
-natural language processing.
+**相反，个人则倾向于追求那些他们可以直接优化的指标。** 大多数的机器学习工具也喜欢这样的设定。一个鼓捣出新特征的工程师，立刻就可以在这样的环境下进行产出。还有一种机器学习致力于解决这种问题，多目标学习。比如，人们可以形式化一个优先的满足问题，考虑多个指标，并且对这些指标的线性组合做优化。即便如此，也不是所有的指标都能作为机器学习的目标：一个文档被点击，一个 app 被下载，多半是因为用户看到了他。但是用户为啥来你的站点缺难解释得多。如何预测站点整体在未来的表现，是一个[AI­complete](https://en.wikipedia.org/wiki/AI-complete)问题，和计算机视觉以及自然语言处理一样难。
 
-#### Rule 40 - Keep ensembles simple.
+## Rule 40 - 模型组合保持简单
 
-Unified models that take in raw features and directly rank content are the easiest models to debug and understand. However, an ensemble of models (a “model” which combines the scores of other models) can work better. **To keep things simple, each model should either be an ensemble only taking the input of other models, or a base model taking many features,
-but not both.** If you have models on top of other models that are trained separately, then combining them can result in bad behavior.
+ 用原始特征直接进行排序的单一模型 debug 和理解起来都最简单。但是模型组合（用其他多个模型的输出做特征）可能效果更好。**为了简单起见，一个模型要莫是只用其他模型的输出做输入，要莫是拿原始特征的基础模型，别混用。** 如果上层模型没有和底层模型一起训练，那么组合的效果可能不会好。
 
-Use a simple model for ensembling that takes only the output of your “base” models as inputs.
-You also want to enforce properties on these ensemble models. For example, an increase in the score produced by a base model should not decrease the score of the ensemble. Also, it is best
-if the incoming models are semantically interpretable (for example, calibrated) so that changes of the underlying models do not confuse the ensemble model. **Also, enforce that an increase in the predicted probability of an underlying classifier does not decrease the predicted
-probability of the ensemble.**
+ 只用上层模型来组合底层模型的输出。可能这些组合模型的功能也很重要。比如某个 base 模型的提升，不应该降低组合模型的总体分数。另外，如果底层模型的输出语意是可解释的就最好不过了（比如校准？），这样底层模型的变化就不会造成上层模型的混乱。**另外，底层模型的概率输出，应该和总体组合的概率输出是正相关的（即同涨，同跌）。**
 
-#### Rule 41 - When performance plateaus, look for qualitatively new sources of information to add rather than refining existing signals.
+## Rule 41 - 当遭遇效果瓶颈，与其提炼旧特征，还不如去找哪些能带来信息量的新特征
 
-You’ve added some demographic information about the user. You've added some information about the words in the document. You have gone through template exploration, and tuned the
-regularization. You haven’t seen a launch with more than a 1% improvement in your key metrics in a few quarters. Now what?
-It is time to start building the infrastructure for radically different features, such as the history of documents that this user has accessed in the last day, week, or year, or data from a different property. Use [wikidata](https://en.wikipedia.org/wiki/Wikidata) entities or something internal to your company (such as Google’s [knowledge graph](https://en.wikipedia.org/wiki/Knowledge_Graph)). Use deep learning. Start to adjust your expectations on how much return you expect on investment, and expand your efforts accordingly. As in any engineering project, you have to weigh the benefit of adding new features against the cost of increased complexity.
+ 已经加了用户的人口统计学特征（比如性别、年龄等），已经加了文档中的词特征，也试过了 template exploration，也调了正则化。已经几个q 没有1%以上的提升可以用来上线了。咋整？这个时候应该建立新的基础设施，引入差异化更大的特征，比如某用户过去一天，一周甚至一年访问过的内容或者是其他渠道获得的数据。用[wikidata](https://en.wikipedia.org/wiki/Wikidata) 维基百科实体或者是公司内部的资源（如 Google 的知识图谱[knowledge graph](https://en.wikipedia.org/wiki/Knowledge_Graph))。用上深度学习。开始调整投入和产出的预期，开始考量付出的效果。像在一个工程问题上一样去思考，在引入收益和引入复杂度之间仔细权衡。
 
-#### Rule 42 - Don't expect diversity, personalization, or relevance to be as correlated with popularity as you think they are.
+## Rule 42 - 别指望多样性，个性化或者相关性如你预期那样让产品更热
 
-Diversity in a set of content can mean many things, with the diversity of the source of the content being one of the most common. Personalization implies each user gets their own results. Relevance implies that the results for a particular query are more appropriate for that query than any other. Thus all three of these properties are defined as being different from the ordinary.
-The problem is that the ordinary tends to be hard to beat.
+ 多样性有很多意思，来源的多样性最有代表性。个性化是说每个人看到自己独特的结果。相关性意味着某个 query 的结果和别的 query 的结果有区分性。所以这三个概念都和传统意义不太一样，而传统意义给人带来的影响又很难改变。
 
-Note that if your system is measuring clicks, time spent, watches, +1s, reshares, et cetera, you are measuring the popularity of the content. Teams sometimes try to learn a personal model with diversity. To personalize, they add features that would allow the system to personalize (some features representing the user’s interest) or diversify (features indicating if this document has any features in common with other documents returned, such as author or content), and find that those features get less weight (or sometimes a different sign) than they expect. This doesn’t mean that diversity, personalization, or relevance aren’t valuable.\* As pointed out in the previous rule, you can do post-­processing to increase diversity or relevance. If you see longer term objectives increase, then you can declare that diversity/relevance is valuable, aside from popularity. You can then either continue to use your post­-processing, or directly modify the objective based upon diversity or relevance.
+ > Eric: 最后一句没翻译好。
+
+ 注意，如果你的系统衡量点击，停留时间，观看，+1，分享等等，你衡量的其实是产品热度。一些团队尝试去训练一个个性化模型来增加多样性。为了个性化，他们增加个性化的特征（一些可以体现用户个人兴趣的特征）或者多样性的特征（某些文档具备而其他文档不具备的特征，比如作者或内容），结果发现这些特征的权重没有预想当中那样大（甚至有时候负向）。就像之前 Rule 提到的那样，你可以用后处理的方式来增加多样性和相关性。如果发现长线的目标涨了，那么就可以声称多样性/相关性是有价值的，而不去管热度是否提升了。你可以继续使用后处理，或者干脆改掉优化目标以直接提升多样性和相关性。
 
 <sup>[Google Research Blog - App Discovery With Google Play](https://research.googleblog.com/2016/12/app-discovery-with-google-play-part-2.html?m=1)
 
-#### Rule 43 - Your friends tend to be the same across different products. Your interests tend not to be.
+## Rule 43 - 你的朋友也许在不同产品上的行为差不多，但你不是
 
-Teams at Google have gotten a lot of traction from taking a model predicting the closeness of a connection in one product, and having it work well on another. Your friends are who they are. On the other hand, I have watched several teams struggle with personalization features across product divides. Yes, it seems like it should work. For now, it doesn’t seem like it does. What has sometimes worked is using raw data from one property to predict behavior on another. Also, keep in mind that even knowing that a user has a history on another property can help. For instance, the presence of user activity on two products may be indicative in and of itself.
+Google的很多团队已经在不同产品的模型迁移之间做了很多事情，并且效果不错。你朋友就是你朋友（意思是他们的行为可以在多个产品之间迁移？）但是从另一个角度讲，我也见过很多团队在不同产品的个性化特征之中挣扎。这么做应该有效，但至少现在还没有。有些成功案例是直接把另一个产品原始数据拿过来，用在另一个产品上。同时要注意，即使只是知道用户在用另外的产品可能也可以帮上忙。例如，两个产品的用户活跃度可以相互参考。
